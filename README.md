@@ -1,8 +1,8 @@
-# 🚀 Motion Pro (The Ultimate Lock-In App)
+# 🚀 Motion (The Ultimate Lock-In App)
 
-Bruh, if you ain't tracking your tasks with points, you're literally just doing side-quests. Welcome to **Motion Pro**, the ultimate productivity app that gamifies your entire life so you actually get stuff done. Built in **Python** and **Flet**, it turns grinding into an art form. No cap.
+Welcome to **Motion**, the ultimate productivity app that gamifies your entire life so you actually get stuff done. Built in **Python** and **Flet**, it turns grinding into an art form.
 
-## ✨ Features (The Sauce)
+## ✨ Features
 
 - **📈 Productivity Points (PP) System:** Earn points for finishing tasks. Finish early? Bonus points. Miss a deadline? Say goodbye to your PP.
 - **🔥 Streaks & Titles:** Start as a "Casual Rookie 🐣" and grind your way up to "Life Prodigy 🌟". Don't break the streak though.
@@ -37,7 +37,7 @@ Bruh, if you ain't tracking your tasks with points, you're literally just doing 
 
 ## 🤝 Contributing
 
-Found a bug or want to make the UI look even more premium? Drop a pull request. Keep the code clean tho.
+Found a bug or want to make the UI look even more premium? Drop a pull request. 
 
 ---
 Stop procrastinating, lock in, and let's get those points! 🏆🔥
