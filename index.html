@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motion - Command Center</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Motion</span>
+          <span class="brand-rank" id="sidebar-rank">LEVEL 0 • CASUAL ROOKIE 🐣</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="tasks">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14l2 2 4-4"></path></svg>
+          <span>Tasks</span>
+        </button>
+        <button class="nav-item" data-tab="history">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>History</span>
+        </button>
+        <button class="nav-item" data-tab="statistics">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <span>Statistics</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-container">
+      <!-- TOP COMMAND BAR -->
+      <header class="topbar">
+        <h1 class="page-title" id="page-title">Command Center</h1>
+
+        <div class="topbar-right">
+          <div class="header-badges">
+            <div class="badge-item badge-level">
+              <span class="badge-icon">🏆</span>
+              <span class="badge-label">Lvl <strong id="header-level">0</strong></span>
+            </div>
+            <div class="badge-item badge-streak">
+              <span class="badge-icon">⚡</span>
+              <span class="badge-label"><strong id="header-streak">0</strong> Day Streak</span>
+            </div>
+            <div class="badge-item badge-pp">
+              <span class="badge-icon">🪙</span>
+              <span class="badge-label"><strong id="header-pp">0</strong> PP</span>
+            </div>
+          </div>
+
+          <div class="topbar-actions">
+            <button class="btn-icon" title="Category Settings" id="btn-open-category-modal">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+            <div class="user-avatar" title="User Profile">
+              <span class="avatar-text">A</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB 1: TASKS -->
+      <section class="tab-content active" id="tab-tasks">
+        <!-- INITIALIZE PROTOCOL FORM -->
+        <div class="protocol-card" id="form-container">
+          <div class="protocol-card-header">
+            <h2>Initialize Protocol</h2>
+          </div>
+
+          <form id="task-form" class="protocol-form">
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="task-title">Task Designation</label>
+                <input type="text" id="task-title" placeholder="Enter objective..." required>
+              </div>
+
+              <div class="form-group flex-1">
+                <label for="task-category">Category</label>
+                <select id="task-category" required>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <div class="form-group flex-1">
+                <label for="task-severity">Severity</label>
+                <select id="task-severity" required>
+                  <option value="low">Low (x0.5)</option>
+                  <option value="med" selected>Medium (x1)</option>
+                  <option value="high">High (x2)</option>
+                  <option value="life_changing">Life Changing (x5)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row mt-3">
+              <div class="form-group flex-1">
+                <label for="task-pp">Base PP</label>
+                <input type="number" id="task-pp" placeholder="100" min="1" max="10000" value="100" required>
+              </div>
+
+              <div class="form-group flex-1">
+                <label for="task-recurring">Recurrence</label>
+                <select id="task-recurring">
+                  <option value="none" selected>One-time Task</option>
+                  <option value="daily">🔄 Repeat Daily</option>
+                  <option value="weekly">📅 Repeat Weekly</option>
+                </select>
+              </div>
+
+              <div class="form-group flex-1">
+                <label for="task-date">Deadline Date</label>
+                <input type="date" id="task-date" required>
+              </div>
+
+              <div class="form-group flex-1">
+                <label for="task-time-btn">Time</label>
+                <button type="button" class="btn-time-trigger" id="task-time-btn">
+                  <span id="task-time-display">🕒 06:00 PM</span>
+                </button>
+                <input type="hidden" id="task-time" value="18:00">
+              </div>
+
+              <div class="form-group btn-group flex-1">
+                <button type="submit" class="btn-deploy" id="btn-submit-task">
+                  <span>🚀 Create Task</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- ACTIVE SEQUENCES -->
+        <div class="sequences-header">
+          <h2>Active Sequences</h2>
+          <div class="category-filters" id="category-filters">
+            <button class="filter-chip active" data-category="ALL">All</button>
+            <!-- Category filter chips populated dynamically -->
+          </div>
+        </div>
+
+        <div class="sequences-grid" id="sequences-grid">
+          <!-- Active Task cards rendered here dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 2: HISTORY -->
+      <section class="tab-content" id="tab-history">
+        <!-- HISTORY TOP STATS BANNER -->
+        <div class="history-summary-card">
+          <div class="summary-stat">
+            <span class="stat-title">CURRENT LEVEL</span>
+            <span class="stat-value level-glow" id="hist-current-level">0</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-stat">
+            <span class="stat-title">TOTAL PP</span>
+            <span class="stat-value pp-glow" id="hist-total-pp">0</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-stat">
+            <span class="stat-title">ACTIVE STREAK</span>
+            <span class="stat-value streak-glow" id="hist-active-streak">🔥 0 Days</span>
+          </div>
+        </div>
+
+        <div class="history-groups" id="history-groups">
+          <!-- History groups (Today, Yesterday, etc.) rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 3: STATISTICS -->
+      <section class="tab-content" id="tab-statistics">
+        <div class="stats-header">
+          <h2>Efficiency Metrics</h2>
+          <div class="month-selector">
+            <button class="btn-month-nav" id="btn-prev-month">&lt;</button>
+            <span class="current-month-text" id="stats-month-year">October 2023</span>
+            <button class="btn-month-nav" id="btn-next-month">&gt;</button>
+          </div>
+        </div>
+
+        <div class="metrics-row">
+          <div class="metric-card">
+            <span class="metric-title">POTENTIAL PP</span>
+            <div class="metric-value-row">
+              <span class="metric-value purple-glow" id="metric-potential-pp">3,800</span>
+            </div>
+            <span class="metric-subtext positive">📈 +12% vs last month</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-title">ACTIVE CATEGORIES</span>
+            <div class="metric-value-row">
+              <span class="metric-value" id="metric-active-categories">8</span>
+            </div>
+            <span class="metric-subtext neutral">🔄 Optimal distribution</span>
+          </div>
+        </div>
+
+        <!-- HEATMAP CALENDAR CONTAINER -->
+        <div class="stats-section-card">
+          <h3>System Output Heatmap</h3>
+          <div class="heatmap-container">
+            <div class="heatmap-months-wrapper" id="heatmap-months-wrapper">
+              <!-- Rendered dynamically (2 months side-by-side) -->
+            </div>
+            <div class="heatmap-legend">
+              <div class="legend-item"><span class="legend-dot productive"></span><span>&gt;= 70%</span></div>
+              <div class="legend-item"><span class="legend-dot average"></span><span>30-69%</span></div>
+              <div class="legend-item"><span class="legend-dot lazy"></span><span>&lt; 30%</span></div>
+              <div class="legend-item"><span class="legend-dot nodata"></span><span>No Data</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATEGORY PERFORMANCE TABLE CONTAINER -->
+        <div class="stats-section-card">
+          <h3>Category Performance</h3>
+          <table class="performance-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Completed</th>
+                <th>Missed</th>
+                <th style="width: 40%;">Success Rate</th>
+              </tr>
+            </thead>
+            <tbody id="category-performance-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL 1: CATEGORY MANAGEMENT MODAL -->
+  <div class="modal-overlay" id="modal-category">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+          <h2>Category Management</h2>
+        </div>
+        <button class="btn-close-modal" id="btn-close-cat-modal">&times;</button>
+      </div>
+
+      <div class="modal-body-split">
+        <!-- LEFT PANE: ACTIVE CATEGORIES -->
+        <div class="pane-left">
+          <div class="pane-header">
+            <h3>Active Categories</h3>
+            <span class="pane-subtitle">WEIGHT SUMMARY</span>
+          </div>
+
+          <div class="categories-list" id="modal-categories-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- RIGHT PANE: SYNTHESIZE CATEGORY -->
+        <div class="pane-right">
+          <div class="pane-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M10 2v7.5M14 2v7.5M8.5 2h7M14 9.5a4.5 4.5 0 1 1-4 0"></path></svg>
+            <h3>Synthesize Category</h3>
+          </div>
+
+          <form id="form-synthesize-category">
+            <div class="form-group">
+              <label for="cat-designation">DESIGNATION</label>
+              <input type="text" id="cat-designation" placeholder="e.g., Strategic Planning" required>
+            </div>
+
+            <div class="form-group">
+              <label for="cat-symbology">SYMBOLOGY (MATERIAL ID)</label>
+              <div class="symbology-input-wrapper">
+                <span class="symbology-icon" id="symbology-preview">⚡</span>
+                <input type="text" id="cat-symbology" placeholder="category" value="category" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>AESTHETIC VECTOR</label>
+              <div class="color-picker-vector" id="color-vector-group">
+                <button type="button" class="color-dot active" data-color="#7C3AED" style="background: #7C3AED;"></button>
+                <button type="button" class="color-dot" data-color="#F87171" style="background: #F87171;"></button>
+                <button type="button" class="color-dot" data-color="#FBBF24" style="background: #FBBF24;"></button>
+                <button type="button" class="color-dot" data-color="#34D399" style="background: #34D399;"></button>
+                <button type="button" class="color-dot" data-color="#38BDF8" style="background: #38BDF8;"></button>
+                <button type="button" class="color-dot" data-color="#EC4899" style="background: #EC4899;"></button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="slider-label-row">
+                <label>PP MULTIPLIER WEIGHT</label>
+                <span class="slider-val" id="cat-weight-val">1.0x PP</span>
+              </div>
+              <input type="range" id="cat-weight" min="0.5" max="3.0" step="0.1" value="1.0">
+              <div class="slider-ticks">
+                <span>0.5x</span>
+                <span>1.0x</span>
+                <span>3.0x</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-synthesize-submit">
+              <span>+ INITIALIZE MODULE</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: RESCHEDULE TASK MODAL -->
+  <div class="modal-overlay" id="modal-reschedule">
+    <div class="modal-card modal-medium">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <h2>Reschedule Task</h2>
+        </div>
+        <button class="btn-close-modal" id="btn-close-reschedule-modal">&times;</button>
+      </div>
+
+      <div class="modal-body-split">
+        <!-- LEFT PANE: TARGET DATE CALENDAR -->
+        <div class="pane-left">
+          <span class="pane-label">TARGET DATE</span>
+          <div class="mini-calendar">
+            <div class="mini-cal-header">
+              <button type="button" id="mini-cal-prev">&lt;</button>
+              <span id="mini-cal-month-year">OCTOBER 2023</span>
+              <button type="button" id="mini-cal-next">&gt;</button>
+            </div>
+            <div class="mini-cal-days-header">
+              <span>MO</span><span>TU</span><span>WE</span><span>TH</span><span>FR</span><span>SA</span><span>SU</span>
+            </div>
+            <div class="mini-cal-grid" id="mini-cal-grid">
+              <!-- Mini calendar grid days rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANE: VISUAL CLOCK WIDGET & REASON -->
+        <div class="pane-right">
+          <div class="form-group">
+            <label>SELECT TIME (VISUAL CLOCK)</label>
+            <div class="clock-picker-widget" id="reschedule-clock-widget">
+              <div class="clock-header">
+                <div class="clock-time-display">
+                  <span class="clock-digits active" id="clock-display-hours">11</span>
+                  <span class="clock-colon">:</span>
+                  <span class="clock-digits" id="clock-display-minutes">30</span>
+                </div>
+                <div class="clock-ampm-toggle">
+                  <button type="button" class="ampm-btn active" id="btn-ampm-am">AM</button>
+                  <button type="button" class="ampm-btn" id="btn-ampm-pm">PM</button>
+                </div>
+              </div>
+              
+              <div class="clock-dial-container">
+                <div class="clock-dial-center"></div>
+                <div class="clock-hand" id="clock-hand">
+                  <div class="clock-hand-head"></div>
+                </div>
+                <div class="clock-face" id="clock-face-dial">
+                  <!-- 12 Radial numbers rendered dynamically -->
+                </div>
+              </div>
+              
+              <div class="clock-mode-selector">
+                <button type="button" class="mode-btn active" id="btn-clock-mode-hours">HOURS</button>
+                <button type="button" class="mode-btn" id="btn-clock-mode-minutes">MINUTES</button>
+                <div class="minute-step-controls">
+                  <button type="button" class="btn-step" id="btn-clock-min-down" title="Minus 1 Minute">-1m</button>
+                  <button type="button" class="btn-step" id="btn-clock-min-up" title="Plus 1 Minute">+1m</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reschedule-reason">REASON FOR DEFERRAL</label>
+            <textarea id="reschedule-reason" rows="2" placeholder="e.g., Blocked by dependency..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btn-cancel-reschedule">CANCEL</button>
+        <button type="button" class="btn-primary" id="btn-confirm-reschedule">CONFIRM RESCHEDULE 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: TASK FORM CLOCK PICKER MODAL -->
+  <div class="modal-overlay" id="modal-form-clock">
+    <div class="modal-card modal-small" style="width: 380px;">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <h2>Select Target Time</h2>
+        </div>
+        <button class="btn-close-modal" id="btn-close-form-clock-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px;">
+        <div class="clock-picker-widget" id="form-clock-widget">
+          <div class="clock-header">
+            <div class="clock-time-display">
+              <span class="clock-digits active" id="form-clock-display-hours">06</span>
+              <span class="clock-colon">:</span>
+              <span class="clock-digits" id="form-clock-display-minutes">00</span>
+            </div>
+            <div class="clock-ampm-toggle">
+              <button type="button" class="ampm-btn" id="btn-form-ampm-am">AM</button>
+              <button type="button" class="ampm-btn active" id="btn-form-ampm-pm">PM</button>
+            </div>
+          </div>
+          
+          <div class="clock-dial-container" id="form-clock-dial-container">
+            <div class="clock-dial-center"></div>
+            <div class="clock-hand" id="form-clock-hand">
+              <div class="clock-hand-head"></div>
+            </div>
+            <div class="clock-face" id="form-clock-face-dial">
+              <!-- 12 Radial numbers rendered dynamically -->
+            </div>
+          </div>
+          
+          <div class="clock-mode-selector">
+            <button type="button" class="mode-btn active" id="btn-form-clock-mode-hours">HOURS</button>
+            <button type="button" class="mode-btn" id="btn-form-clock-mode-minutes">MINUTES</button>
+            <div class="minute-step-controls">
+              <button type="button" class="btn-step" id="btn-form-clock-min-down" title="Minus 1 Minute">-1m</button>
+              <button type="button" class="btn-step" id="btn-form-clock-min-up" title="Plus 1 Minute">+1m</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 12px 20px;">
+        <button type="button" class="btn-primary" id="btn-confirm-form-clock" style="width: 100%;">SET TIME 🕒</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

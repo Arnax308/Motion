@@ -1,0 +1,4 @@
+node_modules/
+data.json
+__pycache__/
+*.log

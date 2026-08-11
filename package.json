@@ -1,0 +1,21 @@
+{
+  "name": "motion-app",
+  "version": "2.0.0",
+  "description": "Motion - The Ultimate Lock-In App (Command Center Edition)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "productivity",
+    "gamification",
+    "motion",
+    "electron"
+  ],
+  "author": "Arnax308",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}
