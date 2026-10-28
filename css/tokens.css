@@ -1,0 +1,91 @@
+/* ==========================================================================
+   MOTION DESIGN TOKENS — dark is the default, light overrides below.
+   ========================================================================== */
+
+:root {
+  --bg: #0B0B0F;
+  --panel: #111116;
+  --card: #16161D;
+  --elev: #1C1C25;
+  --hover: #1F1F29;
+  --overlay: rgba(5, 5, 8, 0.6);
+  --border: #23232D;
+  --border-strong: #2F2F3B;
+
+  --text: #EDEDF2;
+  --text-2: #A3A3B0;
+  --text-3: #6E6E7C;
+  --on-accent: #FFFFFF;
+
+  --accent: #8B5CF6;
+  --accent-hi: #A78BFA;
+  --accent-soft: rgba(139, 92, 246, 0.14);
+  --gold: #F5B544;
+  --gold-soft: rgba(245, 181, 68, 0.12);
+  --streak: #FB923C;
+  --green: #34D399;
+  --green-soft: rgba(52, 211, 153, 0.12);
+  --red: #F87171;
+  --red-soft: rgba(248, 113, 113, 0.12);
+  --blue: #60A5FA;
+  --blue-soft: rgba(96, 165, 250, 0.12);
+
+  --heat-0: #1C1C25;
+  --heat-1: rgba(139, 92, 246, 0.3);
+  --heat-2: rgba(139, 92, 246, 0.55);
+  --heat-3: #8B5CF6;
+  --heat-4: #A78BFA;
+
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+
+  --sidebar-w: 232px;
+  --rail-w: 300px;
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #F7F7F9;
+  --panel: #F0F0F4;
+  --card: #FFFFFF;
+  --elev: #F3F3F7;
+  --hover: #EBEBF0;
+  --overlay: rgba(20, 20, 30, 0.35);
+  --border: #E3E3EA;
+  --border-strong: #D2D2DC;
+
+  --text: #17171C;
+  --text-2: #55556A;
+  --text-3: #8A8A99;
+
+  --accent: #7C3AED;
+  --accent-hi: #6D28D9;
+  --accent-soft: rgba(124, 58, 237, 0.1);
+  --gold: #B7791F;
+  --gold-soft: rgba(217, 152, 34, 0.14);
+  --streak: #EA580C;
+  --green: #059669;
+  --green-soft: rgba(5, 150, 105, 0.1);
+  --red: #DC2626;
+  --red-soft: rgba(220, 38, 38, 0.09);
+  --blue: #2563EB;
+  --blue-soft: rgba(37, 99, 235, 0.09);
+
+  --heat-0: #EBEBF0;
+  --heat-1: rgba(124, 58, 237, 0.22);
+  --heat-2: rgba(124, 58, 237, 0.45);
+  --heat-3: #8B5CF6;
+  --heat-4: #6D28D9;
+
+  --shadow-pop: 0 12px 32px rgba(20, 20, 40, 0.14), 0 2px 6px rgba(20, 20, 40, 0.08);
+
+  color-scheme: light;
+}
