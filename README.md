@@ -75,8 +75,6 @@ These cover the points rules, streaks, repeat catch-up, and the data file's save
 - `js/app.js`: navigation, sidebar, the right-hand summary panel and shortcuts
 - `test/`: Node test suites (`npm test`)
 
-The original Python/Flet version (`main.py`, `ui.py`, `analytics.py`, `data_manager.py`) is still in the repo. Its `data.json` format is compatible.
-
 ## 🤝 Contributing
 
 Found a bug or want to make the UI look even more premium? Drop a pull request.
