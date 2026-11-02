@@ -1,0 +1,5 @@
+<!-- Launch screen: Motion's dark background with the bolt in the middle -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/motion_splash_background" />
+    <item android:gravity="center" android:width="72dp" android:height="72dp" android:drawable="@drawable/ic_motion_splash" />
+</layer-list>

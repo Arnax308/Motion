@@ -1,0 +1,25 @@
+{
+  "appId": "com.arnax.motion",
+  "appName": "Motion",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#0B0B0F"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_motion",
+      "iconColor": "#8B5CF6"
+    },
+    "BackgroundRunner": {
+      "label": "com.arnax.motion.sync",
+      "src": "runners/background.js",
+      "event": "motionSync",
+      "repeat": true,
+      "interval": 15,
+      "autoStart": true
+    }
+  }
+}

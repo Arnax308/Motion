@@ -6,7 +6,7 @@ const DEADLINE = new Date(2026, 9, 28, 18, 0);
 
 function makeData(overrides) {
   return Object.assign({
-    total_pp: 1000, streak: 0, best_streak: 0, last_completion_date: null,
+    total_pp: 1000, baseline_pp: 1000, streak: 0, best_streak: 0, last_completion_date: null,
     categories: [{ name: 'Work', weight: 1.5 }], active_tasks: [], history: []
   }, overrides);
 }
@@ -43,23 +43,53 @@ test('levels and level-based titles', () => {
   assert.equal(lp.nextTitle, 'Momentum Builder');
 });
 
-test('streaks use local dates', () => {
+test('streaks are derived from completion days in local time', () => {
   const d = makeData();
-  E.recordCompletionDay(d, at(27, 0, 30));
+  const done = (id, when) => d.history.push({ id, status: 'completed', pp_earned: 10, completion_time: when.toISOString() });
+  done('a', at(27, 0, 30)); // just after midnight still counts for the 27th
+  E.recomputeDerived(d);
   assert.equal(d.last_completion_date, '2026-10-27');
-  E.recordCompletionDay(d, at(28, 1));
-  assert.equal(d.streak, 2);
-  E.recordCompletionDay(d, at(28, 23));
+  done('b', at(28, 1));
+  done('c', at(28, 23));
+  E.recomputeDerived(d);
   assert.equal(d.streak, 2);
   assert.equal(E.effectiveStreak(d, at(29, 12)), 2);
   assert.equal(E.effectiveStreak(d, at(30, 12)), 0);
-  E.recordCompletionDay(d, new Date(2026, 10, 3));
+  done('d', new Date(2026, 10, 3));
+  E.recomputeDerived(d);
   assert.equal(d.streak, 1);
   assert.equal(d.best_streak, 2);
+  assert.equal(d.total_pp, 1040);
+});
+
+test('PP replays history in order from the baseline, floored at 0', () => {
+  const d = makeData({ baseline_pp: 15 });
+  d.history.push(
+    { id: 'h2', pp_earned: 100, completion_time: at(28, 12).toISOString() },
+    { id: 'h1', pp_earned: -50, completion_time: at(28, 9).toISOString() }
+  );
+  E.recomputeDerived(d);
+  assert.equal(d.total_pp, 100); // 15 − 50 floors at 0, then +100
+  assert.equal(E.baselineFor(d.history, 960), 910);
+});
+
+test('resolutions and respawns get deterministic ids', () => {
+  const d = makeData();
+  d.active_tasks.push(makeTask({ id: 'run', recurring: 'daily' }));
+  E.completeTask(d, 'run', at(28, 16));
+  assert.equal(d.history[0].id, 'hist-run');
+  assert.equal(d.history[0].task_id, 'run');
+  const next = d.active_tasks[0];
+  assert.equal(next.id, 'run@2026-10-29');
+  assert.equal(next.series_id, 'run');
+  assert.equal(next.origin, 'run:completed');
+  E.missTask(d, next.id, new Date(2026, 10, 3, 12));
+  assert.equal(d.active_tasks[0].id, 'run@2026-11-03');
+  assert.ok(d.history.some(h => h.id === 'hist-run@2026-10-29-skip-2026-11-02' && h.origin === 'run@2026-10-29:missed'));
 });
 
 test('completing an on-time daily task schedules tomorrow with no catch-up', () => {
-  const d = makeData({ total_pp: 0 });
+  const d = makeData({ total_pp: 0, baseline_pp: 0 });
   d.active_tasks.push(makeTask({ recurring: 'daily' }));
   const r = E.completeTask(d, 'a', at(28, 16));
   assert.equal(r.earned, 600);
@@ -103,7 +133,7 @@ test('catch-up rule: floor(ignored / 2), at least the original miss', () => {
 });
 
 test('completing a daily task 3 days late charges one skipped repeat', () => {
-  const d = makeData({ total_pp: 0 });
+  const d = makeData({ total_pp: 0, baseline_pp: 0 });
   d.active_tasks.push(makeTask({ recurring: 'daily', severity: 'med' }));
   const r = E.completeTask(d, 'a', at(31, 12)); // the 29th and 30th went by
   assert.equal(r.catchUp, 1);
@@ -121,7 +151,7 @@ test('weekly repeats skip whole weeks', () => {
 });
 
 test('auto-miss waits 72 hours', () => {
-  const d = makeData({ total_pp: 100 });
+  const d = makeData({ total_pp: 100, baseline_pp: 100 });
   d.active_tasks.push(makeTask());
   assert.equal(E.autoMissOverdue(d, at(31, 17)).length, 0);
   assert.equal(E.autoMissOverdue(d, at(31, 19)).length, 1);

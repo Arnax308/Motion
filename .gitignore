@@ -4,3 +4,6 @@ data.json
 backups/
 data.corrupt-*.json
 *.tmp
+js/sync-config.js
+www/
+dist/

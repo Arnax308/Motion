@@ -1,10 +1,9 @@
 /* ==========================================================================
-   MOTION STORE — loading, saving, migrations and undo.
+   MOTION STORE — loading, saving, migrations, undo and sync bookkeeping.
    ========================================================================== */
 
 (function () {
-  const Engine = window.Motion.Engine;
-  const LOCAL_KEY = 'motion-data';
+  const { Engine, SyncCore, Platform } = window.Motion;
   const UNDO_LIMIT = 20;
 
   const ICON_ALIASES = {
@@ -24,6 +23,7 @@
   let data = null;
   let undoStack = [];
   const listeners = [];
+  const changeListeners = [];
 
   function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
@@ -84,6 +84,11 @@
     if (typeof d.best_streak !== 'number') {
       d.best_streak = Math.max(d.streak || 0, Engine.longestStreakInHistory(d.history));
     }
+
+    // PP and streaks are derived from history; baselines keep numbers from before that
+    if (typeof d.baseline_pp !== 'number') d.baseline_pp = Engine.baselineFor(d.history, d.total_pp);
+    if (typeof d.baseline_best_streak !== 'number') d.baseline_best_streak = d.best_streak;
+    Engine.recomputeDerived(d);
     return d;
   }
 
@@ -91,23 +96,17 @@
     let loaded = null;
     let info = { status: 'ok' };
     try {
-      if (window.api && window.api.loadData) {
-        // Main returns { data, status, ... }; status says whether the file had to be recovered
-        info = await window.api.loadData();
-        loaded = info ? info.data : null;
-      } else {
-        // Browser preview: keep data in localStorage, seeded from data.json if served
-        const raw = localStorage.getItem(LOCAL_KEY);
-        if (raw) loaded = JSON.parse(raw);
-        else {
-          const res = await fetch('data.json').catch(() => null);
-          if (res && res.ok) loaded = await res.json();
-        }
-      }
+      // { data, status, ... }; status says whether the data had to be recovered
+      info = await Platform.loadData();
+      loaded = info ? info.data : null;
     } catch (e) {
       console.warn('Could not load data:', e);
     }
+    const hadSyncState = !!(loaded && loaded.sync);
     data = migrate(loaded);
+    SyncCore.ensureSyncState(data);
+    if (!loaded) data.sync.fresh = true; // a new install takes the cloud's data on first sync
+    else if (!hadSyncState) SyncCore.adoptExisting(data); // existing data gets uploaded once
     // Persist migrations and create the file on first run
     await save();
     notifyRecovery(info || {});
@@ -119,13 +118,13 @@
     if (info.status === 'recovered') {
       UI.toast({
         title: 'Restored your data from a backup',
-        body: `data.json couldn’t be read, so it was kept as ${fileName(info.corruptPath)}.`,
+        body: info.corruptPath ? `data.json couldn’t be read, so it was kept as ${fileName(info.corruptPath)}.` : 'Your saved data couldn’t be read; a copy was kept.',
         icon: 'lifebuoy', tone: 'danger', duration: 12000
       });
     } else if (info.status === 'corrupt') {
       UI.toast({
         title: info.unsafe ? 'Couldn’t read your data, so saving is paused' : 'Couldn’t read your data, so Motion started fresh',
-        body: info.unsafe ? info.error : `The unreadable file was kept as ${fileName(info.corruptPath)}.`,
+        body: info.unsafe ? info.error : info.corruptPath ? `The unreadable file was kept as ${fileName(info.corruptPath)}.` : 'A copy of the unreadable data was kept.',
         icon: 'alert-triangle', tone: 'danger', duration: 15000
       });
     }
@@ -137,12 +136,8 @@
 
   async function save() {
     try {
-      if (window.api && window.api.saveData) {
-        const res = await window.api.saveData(data);
-        if (res && res.success === false) throw new Error(res.error);
-      } else {
-        localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
-      }
+      const res = await Platform.saveData(data);
+      if (res && res.success === false) throw new Error(res.error);
     } catch (e) {
       console.error('Could not save data:', e);
       if (window.Motion.UI) window.Motion.UI.toast({ title: 'Couldn’t save your changes', body: String(e.message || e), tone: 'danger', icon: 'alert-triangle' });
@@ -153,10 +148,18 @@
     listeners.forEach(fn => fn(data));
   }
 
-  // Run fn against the data, save and re-render. Undoable mutations can be rolled back.
+  function localChanged() {
+    changeListeners.forEach(fn => fn(data));
+  }
+
+  // Run fn against the data, record what changed for sync, save and re-render.
+  // Undoable mutations can be rolled back.
   function mutate(fn, opts) {
+    const before = SyncCore.recordMap(data);
     const snapshot = opts && opts.undoable ? clone(data) : null;
     const result = fn(data);
+    SyncCore.trackChanges(data, before);
+    Engine.recomputeDerived(data);
     if (snapshot && result !== null && result !== false) {
       undoStack.push(snapshot);
       if (undoStack.length > UNDO_LIMIT) undoStack.shift();
@@ -166,15 +169,35 @@
     }
     save();
     emit();
+    localChanged();
     return result;
   }
 
+  // Undo restores the old records but keeps current sync bookkeeping, so the rollback
+  // is recorded as a new change and reaches the other device
   function undo() {
     if (!undoStack.length) return false;
+    const before = SyncCore.recordMap(data);
+    const syncState = data.sync;
     data = undoStack.pop();
+    data.sync = syncState;
+    SyncCore.trackChanges(data, before);
+    Engine.recomputeDerived(data);
     save();
     emit();
+    localChanged();
     return true;
+  }
+
+  // Applies merged changes from the other device. fn returns how many records changed.
+  function commitRemote(fn) {
+    const changed = fn(data);
+    if (changed > 0) {
+      undoStack = []; // undo snapshots predate the merge and would revert it
+      emit();
+    }
+    save();
+    return changed;
   }
 
   window.Motion.Store = {
@@ -182,7 +205,9 @@
     mutate,
     undo,
     canUndo: () => undoStack.length > 0,
+    commitRemote,
     get: () => data,
-    subscribe: fn => listeners.push(fn)
+    subscribe: fn => listeners.push(fn),
+    onLocalChange: fn => changeListeners.push(fn)
   };
 })();

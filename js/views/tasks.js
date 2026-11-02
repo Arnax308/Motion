@@ -355,6 +355,7 @@
       else if (act === 'reschedule') openReschedule(id);
       else if (act === 'defer') defer(id);
       else if (act === 'more') openMore(id, actEl);
+      else if (UI.isPhone()) openActions(id);
       else openEdit(id);
     });
 
@@ -423,6 +424,37 @@
       'sep',
       { label: 'Delete', icon: 'trash', danger: true, onSelect: () => remove(id) }
     ]);
+  }
+
+  // Touch screens have no hover toolbar, so a tap opens every action in one sheet
+  function openActions(id) {
+    const task = findTask(id);
+    if (!task) return;
+    const pp = Engine.ppBreakdown(Store.get(), task, new Date()).total;
+    const body = UI.el(`<div class="sheet-actions">
+      <p class="dialog-text">${esc(task.description || `Due ${UI.fmtDay(task.deadline)}, ${UI.fmtTime(task.deadline)}`)}</p>
+      <button class="menu-item ok" data-a="complete">${icon('check')}<span>Complete</span><span class="hint">+${UI.fmtNum(pp)} PP</span></button>
+      <button class="menu-item" data-a="reschedule">${icon('calendar-repeat')}<span>Reschedule</span><span class="hint">PP ×½</span></button>
+      <button class="menu-item" data-a="defer">${icon('player-pause')}<span>Defer</span><span class="hint">±0 PP</span></button>
+      <button class="menu-item" data-a="edit">${icon('pencil')}<span>Edit</span></button>
+      <button class="menu-item" data-a="miss">${icon('x')}<span>Mark missed</span><span class="hint">−${Engine.missPenalty(task)} PP</span></button>
+      <button class="menu-item danger" data-a="delete">${icon('trash')}<span>Delete</span></button>
+    </div>`);
+    const sheet = UI.dialog({ title: task.title, body, sheet: true });
+    body.addEventListener('click', e => {
+      const btn = e.target.closest('[data-a]');
+      if (!btn) return;
+      sheet.close();
+      const a = btn.dataset.a;
+      if (a === 'complete') {
+        const row = groupsEl.querySelector(`[data-id="${CSS.escape(id)}"]`);
+        if (row) complete(id, row.querySelector('.check'), row);
+      } else if (a === 'reschedule') openReschedule(id);
+      else if (a === 'defer') defer(id);
+      else if (a === 'edit') openEdit(id);
+      else if (a === 'miss') miss(id);
+      else if (a === 'delete') remove(id);
+    });
   }
 
   function openReschedule(id) {

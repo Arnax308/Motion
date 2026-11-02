@@ -159,29 +159,57 @@
     return diff <= 1 ? data.streak : 0;
   }
 
-  function recordCompletionDay(data, now) {
-    const today = dateKey(now);
-    if (data.last_completion_date) {
-      const diff = daysBetweenKeys(data.last_completion_date, today);
-      if (diff === 1) data.streak += 1;
-      else if (diff > 1) data.streak = 1;
-      else data.streak = Math.max(1, data.streak || 0); // same day: keep the streak
-    } else {
-      data.streak = 1;
-    }
-    data.last_completion_date = today;
-    data.best_streak = Math.max(data.best_streak || 0, data.streak);
+  function completionDays(history) {
+    return [...new Set(history.filter(h => h.status === 'completed').map(h => dateKey(h.completion_time)))].sort();
   }
 
   function longestStreakInHistory(history) {
-    const keys = [...new Set(history.filter(h => h.status === 'completed').map(h => dateKey(h.completion_time)))].sort();
     let best = 0, run = 0, prev = null;
-    keys.forEach(k => {
+    completionDays(history).forEach(k => {
       run = prev && daysBetweenKeys(prev, k) === 1 ? run + 1 : 1;
       best = Math.max(best, run);
       prev = k;
     });
     return best;
+  }
+
+  // History in the order it happened; ids break ties so every device replays identically
+  function historyInOrder(history) {
+    return history.slice().sort((a, b) =>
+      (new Date(a.completion_time) - new Date(b.completion_time)) || String(a.id).localeCompare(String(b.id)));
+  }
+
+  function replayPp(history, start) {
+    let total = start || 0;
+    historyInOrder(history).forEach(h => { total = Math.max(0, total + (h.pp_earned || 0)); });
+    return total;
+  }
+
+  // PP, streak and best streak are derived from history (plus a baseline from before history
+  // was kept), so two devices that hold the same history always show the same numbers.
+  function recomputeDerived(data) {
+    data.total_pp = replayPp(data.history, data.baseline_pp || 0);
+    const days = completionDays(data.history);
+    let streak = 0;
+    for (let i = days.length - 1; i >= 0; i--) {
+      if (i < days.length - 1 && daysBetweenKeys(days[i], days[i + 1]) !== 1) break;
+      streak++;
+    }
+    data.streak = streak;
+    data.last_completion_date = days.length ? days[days.length - 1] : null;
+    data.best_streak = Math.max(data.baseline_best_streak || 0, longestStreakInHistory(data.history));
+    return data;
+  }
+
+  // Picks the starting PP that reproduces a stored total, for files from before PP was derived
+  function baselineFor(history, storedTotal) {
+    let baseline = storedTotal - history.reduce((s, h) => s + (h.pp_earned || 0), 0);
+    for (let i = 0; i < 3; i++) {
+      const diff = storedTotal - replayPp(history, baseline);
+      if (diff === 0) break;
+      baseline += diff;
+    }
+    return baseline;
   }
 
   // TASK LIFECYCLE (all mutate data in place)
@@ -190,6 +218,13 @@
   function newId(prefix) {
     idSeq = (idSeq + 1) % 100000;
     return `${prefix}-${Date.now()}-${idSeq}${Math.floor(Math.random() * 1000)}`;
+  }
+
+  // Ids are deterministic, so a record may already exist (e.g. merged from the other device)
+  function putHistory(data, entry) {
+    const i = data.history.findIndex(h => h.id === entry.id);
+    if (i === -1) data.history.push(entry);
+    else data.history[i] = entry;
   }
 
   function takeTask(data, taskId) {
@@ -201,7 +236,7 @@
   // (the app was closed, or the task was resolved late), the next copy jumps to the first
   // upcoming date and the skipped ones cost floor(ignored / 2) misses in total. A missed
   // task's own miss counts toward that total, so 7 ignored days cost 3 misses, not 7.
-  function respawnRecurring(data, task, now, wasMissed) {
+  function respawnRecurring(data, task, now, wasMissed, status) {
     const none = { next: null, catchUp: 0, catchUpLoss: 0 };
     if (!task.recurring || task.recurring === 'none') return none;
     now = now ? new Date(now) : new Date();
@@ -218,18 +253,26 @@
     const extra = wasMissed
       ? Math.max(1, Math.floor((skipped.length + 1) / 2)) - 1
       : Math.floor(skipped.length / 2);
+    // origin ties these records to how the task was resolved, so sync can drop them if another
+    // device resolved the same task differently
+    const origin = `${task.id}:${wasMissed ? 'missed' : status || 'completed'}`;
     let catchUpLoss = 0;
     skipped.slice(skipped.length - extra).forEach(d => {
       const loss = missPenalty(task);
       catchUpLoss += loss;
-      data.total_pp = Math.max(0, data.total_pp - loss);
-      const entry = historyEntry(Object.assign({}, task, { deadline: d.toISOString() }), 'missed', -loss, now);
+      const entry = historyEntry(Object.assign({}, task, { deadline: d.toISOString() }), 'missed', -loss, now,
+        `hist-${task.id}-skip-${dateKey(d)}`);
       entry.catch_up = true;
-      data.history.push(entry);
+      entry.origin = origin;
+      putHistory(data, entry);
     });
 
+    // Same series and date gives the same id on every device
+    const series = task.series_id || task.id;
     const next = {
-      id: newId('task'),
+      id: `${series}@${dateKey(deadline)}`,
+      series_id: series,
+      origin,
       title: task.title,
       description: task.description || '',
       category: task.category,
@@ -239,13 +282,15 @@
       rescheduled: false,
       recurring: task.recurring
     };
-    data.active_tasks.push(next);
+    if (!data.active_tasks.some(t => t.id === next.id)) data.active_tasks.push(next);
     return { next, catchUp: extra, catchUpLoss };
   }
 
-  function historyEntry(task, status, pp, at) {
+  // A task is resolved once, so its resolution id is fixed: the same event on two devices merges
+  function historyEntry(task, status, pp, at, id) {
     return {
-      id: newId('hist'),
+      id: id || `hist-${task.id}`,
+      task_id: task.id,
       title: task.title,
       category: task.category,
       severity: task.severity || 'med',
@@ -279,10 +324,9 @@
     if (!task) return null;
     const breakdown = ppBreakdown(data, task, now);
     const levelBefore = levelFor(data.total_pp);
-    data.total_pp += breakdown.total;
-    recordCompletionDay(data, now);
-    data.history.push(historyEntry(task, 'completed', breakdown.total, now));
-    const r = respawnRecurring(data, task, now, false);
+    putHistory(data, historyEntry(task, 'completed', breakdown.total, now));
+    const r = respawnRecurring(data, task, now, false, 'completed');
+    recomputeDerived(data);
     return {
       task, earned: breakdown.total, breakdown, respawned: r.next, catchUp: r.catchUp, catchUpLoss: r.catchUpLoss,
       levelBefore, levelAfter: levelFor(data.total_pp)
@@ -294,9 +338,9 @@
     const task = takeTask(data, taskId);
     if (!task) return null;
     const loss = missPenalty(task);
-    data.total_pp = Math.max(0, data.total_pp - loss);
-    data.history.push(historyEntry(task, 'missed', -loss, now));
+    putHistory(data, historyEntry(task, 'missed', -loss, now));
     const r = respawnRecurring(data, task, now, true);
+    recomputeDerived(data);
     return { task, loss, respawned: r.next, catchUp: r.catchUp, catchUpLoss: r.catchUpLoss };
   }
 
@@ -304,8 +348,9 @@
     now = now ? new Date(now) : new Date();
     const task = takeTask(data, taskId);
     if (!task) return null;
-    data.history.push(historyEntry(task, 'deferred', 0, now));
-    const r = respawnRecurring(data, task, now, false);
+    putHistory(data, historyEntry(task, 'deferred', 0, now));
+    const r = respawnRecurring(data, task, now, false, 'deferred');
+    recomputeDerived(data);
     return { task, respawned: r.next, catchUp: r.catchUp, catchUpLoss: r.catchUpLoss };
   }
 
@@ -389,7 +434,7 @@
     findCategory, categoryWeight, severityOf,
     ppBreakdown, maxPp, missPenalty,
     levelFor, titleFor, levelProgress,
-    effectiveStreak, recordCompletionDay, longestStreakInHistory,
+    effectiveStreak, longestStreakInHistory, recomputeDerived, baselineFor, historyInOrder,
     newId, addTask, completeTask, missTask, deferTask, deleteTask, rescheduleTask,
     respawnRecurring, autoMissOverdue, autoMissAt,
     bucketFor, dailyAggregate, periodStats, monthStats

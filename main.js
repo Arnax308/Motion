@@ -3,6 +3,7 @@ const path = require('path');
 const dataFile = require('./data-file');
 
 let mainWindow;
+const SYNC_HOSTS = ['firestore.googleapis.com', 'identitytoolkit.googleapis.com', 'securetoken.googleapis.com'];
 
 // Packaged builds can't write inside the app archive, so they keep data in the user profile
 const DATA_FILE = process.env.MOTION_DATA_FILE
@@ -64,6 +65,14 @@ if (!app.requestSingleInstanceLock()) {
       const result = dataFile.save(DATA_FILE, data);
       if (!result.success) console.error('Error saving data.json:', result.error);
       return result;
+    });
+    // Sync requests go through here: the page's file:// origin isn't reliably accepted by
+    // Google's CORS checks. Only Firebase's REST hosts are allowed.
+    ipcMain.handle('net:fetch', async (event, url, init) => {
+      const host = new URL(url).hostname;
+      if (new URL(url).protocol !== 'https:' || !SYNC_HOSTS.includes(host)) throw new Error(`Blocked request to ${host}`);
+      const res = await fetch(url, { method: init.method, headers: init.headers, body: init.body });
+      return { ok: res.ok, status: res.status, text: await res.text() };
     });
     ipcMain.handle('theme:set', (event, mode) => {
       nativeTheme.themeSource = ['light', 'dark'].includes(mode) ? mode : 'system';
