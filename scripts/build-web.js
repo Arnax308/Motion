@@ -29,7 +29,8 @@ function copyCssWithAssets(rel) {
 fs.rmSync(WWW, { recursive: true, force: true });
 fs.mkdirSync(WWW, { recursive: true });
 
-let html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+// The phone app has its own interface: phone.html becomes the APK's start page
+let html = fs.readFileSync(path.join(ROOT, 'phone.html'), 'utf8');
 // Capacitor injects its bridge as an inline script, which a strict CSP would block
 html = html.replace("script-src 'self'", "script-src 'self' 'unsafe-inline'");
 fs.writeFileSync(path.join(WWW, 'index.html'), html);

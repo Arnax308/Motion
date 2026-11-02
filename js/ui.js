@@ -134,16 +134,12 @@
     return popover(anchor, wrap, opts);
   }
 
-  // Phone-sized screens get a bottom tab bar, bottom sheets and tap-for-actions
-  const phoneQuery = window.matchMedia('(max-width: 720px)');
-  const isPhone = () => phoneQuery.matches;
-
   // DIALOGS
   const dialogs = [];
 
   function dialog(opts) {
     const overlay = el(`<div class="dialog-overlay">
-      <div class="dialog${opts.sheet ? ' dialog-sheet' : ''}" role="dialog" aria-modal="true" style="${opts.width ? `width:${opts.width}px` : ''}">
+      <div class="dialog" role="dialog" aria-modal="true" style="${opts.width ? `width:${opts.width}px` : ''}">
         <div class="dialog-head">${opts.icon ? icon(opts.icon) : ''}<h2>${esc(opts.title)}</h2>
           <button class="icon-btn" data-close aria-label="Close">${icon('x')}</button></div>
         <div class="dialog-body"></div>
@@ -395,6 +391,6 @@
     esc, icon, el,
     fmtNum, fmtTime, fmtDay, fmtShortDate, fmtMonth, fmtDuration, fmtSigned, toHHMM,
     popover, closePopover, menu, dialog, confirm, closeTop, isLayerOpen,
-    toast, ppFloat, whenPicker, defaultDue, isPhone
+    toast, ppFloat, whenPicker, defaultDue
   };
 })();

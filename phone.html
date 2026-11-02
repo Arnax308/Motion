@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com">
+  <title>Motion</title>
+  <link rel="stylesheet" href="node_modules/@fontsource/inter/latin-400.css">
+  <link rel="stylesheet" href="node_modules/@fontsource/inter/latin-500.css">
+  <link rel="stylesheet" href="node_modules/@fontsource/inter/latin-600.css">
+  <link rel="stylesheet" href="node_modules/@fontsource/inter/latin-700.css">
+  <link rel="stylesheet" href="node_modules/@fontsource/inter/latin-800.css">
+  <link rel="stylesheet" href="node_modules/@fontsource/jetbrains-mono/latin-500.css">
+  <link rel="stylesheet" href="node_modules/@fontsource/jetbrains-mono/latin-600.css">
+  <link rel="stylesheet" href="node_modules/@fontsource/jetbrains-mono/latin-700.css">
+  <link rel="stylesheet" href="node_modules/@fontsource/jetbrains-mono/latin-800.css">
+  <link rel="stylesheet" href="node_modules/@tabler/icons-webfont/dist/tabler-icons-outline.min.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/phone.css">
+  <script src="js/theme.js"></script>
+</head>
+<body>
+  <div class="p-app">
+    <main class="p-screens"></main>
+    <nav class="p-nav" aria-label="Main"></nav>
+  </div>
+
+  <!-- Shared core: same rules, data and sync as the desktop app -->
+  <script src="js/sync-config.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/sync-core.js"></script>
+  <script src="js/firestore.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/alerts-core.js"></script>
+  <script src="js/platform.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/sync-client.js"></script>
+  <script src="js/alerts.js"></script>
+  <script src="js/lifecycle.js"></script>
+  <script src="js/mobile.js"></script>
+
+  <!-- Phone interface -->
+  <script src="js/phone/kit.js"></script>
+  <script src="js/phone/task-ui.js"></script>
+  <script src="js/phone/screens.js"></script>
+  <script src="js/phone/me.js"></script>
+  <script src="js/phone/shell.js"></script>
+</body>
+</html>

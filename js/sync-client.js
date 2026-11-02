@@ -7,7 +7,9 @@
   const M = window.Motion;
   const { Store, Platform } = M;
   const config = window.MotionSyncConfig;
-  const enabled = !!(config && config.apiKey && config.projectId && config.syncKey);
+  // ?nosync in the URL keeps browser test sessions away from the real sync space
+  const disabledByUrl = /[?&]nosync\b/.test(window.location.search);
+  const enabled = !disabledByUrl && !!(config && config.apiKey && config.projectId && config.syncKey);
 
   const AFTER_CHANGE_MS = 2000;
   const INTERVAL_MS = 60 * 1000;
@@ -65,5 +67,25 @@
     return Promise.race([first, new Promise(res => setTimeout(() => res(false), timeoutMs))]);
   }
 
-  M.Sync = { enabled, start, syncNow, syncSoon, status, onStatus: fn => listeners.push(fn) };
+  function ago(ts) {
+    if (!ts) return 'never';
+    const mins = Math.round((Date.now() - ts) / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins} min ago`;
+    const hours = Math.round(mins / 60);
+    if (hours < 24) return `${hours} h ago`;
+    return M.UI.fmtDay(ts);
+  }
+
+  // { tone, label } for a sync status, shared by both UIs
+  function describe(s) {
+    if (s.state === 'off') return { tone: 'muted', label: 'Sync not set up' };
+    if (s.state === 'syncing') return { tone: 'accent', label: 'Syncing…' };
+    if (s.state === 'offline') return { tone: 'warn', label: `Offline · last synced ${ago(s.last)}` };
+    if (s.state === 'error') return { tone: 'danger', label: 'Sync problem' };
+    if (s.last) return { tone: 'ok', label: `Synced ${ago(s.last)}` };
+    return { tone: 'muted', label: 'Waiting to sync' };
+  }
+
+  M.Sync = { enabled, start, syncNow, syncSoon, status, describe, ago, onStatus: fn => listeners.push(fn) };
 })();

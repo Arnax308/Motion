@@ -47,11 +47,9 @@
       M.Alerts.refreshPermission().then(() => M.Alerts.rescheduleSoon());
     });
     App.addListener('pause', () => seedRunner());
-    // Android back: close the top sheet or menu first, then go back to Today, then leave the app
+    // Android back: the phone shell closes sheets and screens first, then the app goes to the background
     App.addListener('backButton', () => {
-      if (M.UI.closeTop()) return;
-      if (M.State.page !== 'today') M.App.navigate('today');
-      else App.minimizeApp();
+      if (!M.Phone.back()) App.minimizeApp();
     });
   }
 

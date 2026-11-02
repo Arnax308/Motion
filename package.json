@@ -24,8 +24,11 @@
     "@capacitor/app": "^7.1.2",
     "@capacitor/background-runner": "^2.3.1",
     "@capacitor/core": "^7.6.10",
+    "@capacitor/haptics": "^7.0.5",
+    "@capacitor/keyboard": "^7.0.6",
     "@capacitor/local-notifications": "^7.0.7",
     "@capacitor/preferences": "^7.0.4",
+    "@capacitor/status-bar": "^7.0.6",
     "@fontsource/inter": "^5.0.18",
     "@fontsource/jetbrains-mono": "^5.0.20",
     "@tabler/icons-webfont": "^3.19.0"

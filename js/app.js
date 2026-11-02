@@ -93,31 +93,6 @@
       </button>`).join('');
 
     renderPlayer(data, now);
-    renderPhoneChrome(data, now);
-  }
-
-  // Phone layout: a compact header with your stats and a bottom tab bar
-  const TABS = [
-    { id: 'today', label: 'Today', icon: 'sun' },
-    { id: 'all', label: 'Tasks', icon: 'list-check' },
-    { id: 'history', label: 'History', icon: 'history' },
-    { id: 'stats', label: 'Stats', icon: 'chart-dots-3' }
-  ];
-
-  function renderPhoneChrome(data, now) {
-    const lp = Engine.levelProgress(data.total_pp);
-    const streak = Engine.effectiveStreak(data, now);
-    const sync = M.Views.settings.describeSync(M.Sync.status());
-    $('[data-m-head]').innerHTML = `
-      <div class="logo-mark">${icon('bolt')}</div>
-      <div class="m-title"><b>${esc(lp.title)}</b><span>Level ${lp.level} · ${UI.fmtNum(lp.toNext)} PP to go</span></div>
-      <span class="m-stat gold">${icon('coin')}${UI.fmtNum(lp.pp)}</span>
-      <span class="m-stat streak">${icon('flame')}${streak}</span>
-      <button class="m-sync" data-page="settings" title="${esc(sync.label)}" aria-label="${esc(sync.label)}"><span class="sync-dot ${sync.tone}"></span></button>`;
-    const more = !TABS.some(t => t.id === M.State.page);
-    $('[data-tabbar]').innerHTML = TABS.map(t => `
-      <button class="${M.State.page === t.id ? 'on' : ''}" data-page="${t.id}">${icon(t.icon)}<span>${t.label}</span></button>`).join('')
-      + `<button class="${more ? 'on' : ''}" data-more>${icon('dots')}<span>More</span></button>`;
   }
 
   function renderPlayer(data, now) {
@@ -145,8 +120,6 @@
   function renderSyncPill() {
     const d = M.Views.settings.describeSync(M.Sync.status());
     $('[data-sync-pill]').innerHTML = `<span class="sync-dot ${d.tone}"></span><span>${esc(d.label)}</span>`;
-    const dot = $('[data-m-head] .m-sync');
-    if (dot) dot.innerHTML = `<span class="sync-dot ${d.tone}"></span>`;
   }
 
   function renderThemeSwitch() {
@@ -254,43 +227,8 @@
     }
   }
 
-  // AUTO-MISS — tasks 72h past their deadline count as missed
-  function runAutoMiss() {
-    const due = Store.get().active_tasks.some(t => new Date() > Engine.autoMissAt(t));
-    if (!due) return false;
-    const results = Store.mutate(d => Engine.autoMissOverdue(d));
-    const lost = results.reduce((s, r) => s + r.loss + r.catchUpLoss, 0);
-    UI.toast({
-      title: `${results.length} overdue task${results.length === 1 ? ' was' : 's were'} marked missed`,
-      body: `More than ${Engine.AUTO_MISS_HOURS}h past due · −${lost} PP`,
-      icon: 'alert-triangle', tone: 'danger', duration: 8000
-    });
-    return true;
-  }
-
   // EVENTS
   function bindShell() {
-    const phoneNav = e => {
-      const page = e.target.closest('[data-page]');
-      const more = e.target.closest('[data-more]');
-      if (page) {
-        M.State.category = null;
-        navigate(page.dataset.page);
-      } else if (more) {
-        const mode = window.MotionTheme.get();
-        UI.menu(more, [
-          { label: 'Categories', icon: 'tags', onSelect: () => navigate('categories') },
-          { label: 'Settings', icon: 'settings', onSelect: () => navigate('settings') },
-          'sep',
-          ...[['system', 'device-mobile', 'Match system'], ['light', 'sun', 'Light theme'], ['dark', 'moon', 'Dark theme']].map(([m, ic, label]) => ({
-            label, icon: ic, active: mode === m, onSelect: () => { window.MotionTheme.set(m); renderThemeSwitch(); }
-          }))
-        ]);
-      }
-    };
-    $('[data-tabbar]').addEventListener('click', phoneNav);
-    $('[data-m-head]').addEventListener('click', phoneNav);
-
     $('.side').addEventListener('click', e => {
       const page = e.target.closest('[data-page]');
       const cat = e.target.closest('[data-cat]');
@@ -363,12 +301,11 @@
     navigate('today');
     // Pull the other device's changes first so the auto-miss doesn't fight them
     await M.Sync.start(5000);
-    runAutoMiss();
-    M.Mobile.init().catch(e => console.warn('Mobile setup failed:', e));
+    M.Lifecycle.runAutoMiss();
 
     // Keep relative times fresh and catch tasks that pass the auto-miss window
     setInterval(() => {
-      if (runAutoMiss()) return;
+      if (M.Lifecycle.runAutoMiss()) return;
       if (!UI.isLayerOpen()) renderAll();
     }, 60 * 1000);
   }
