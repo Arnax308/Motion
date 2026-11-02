@@ -28,7 +28,9 @@
       let json = null;
       try { json = text ? JSON.parse(text) : null; } catch (e) { /* non-JSON error page */ }
       if (!res.ok) {
-        const err = new Error((json && json.error && (json.error.message || json.error.status)) || `HTTP ${res.status}`);
+        // runQuery wraps its error in an array; other endpoints return it directly
+        const detail = (Array.isArray(json) ? json[0] : json) || {};
+        const err = new Error((detail.error && (detail.error.message || detail.error.status)) || `HTTP ${res.status}`);
         err.status = res.status;
         throw err;
       }

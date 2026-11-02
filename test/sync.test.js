@@ -107,6 +107,20 @@ test('a fresh phone takes the laptop data, including baselines, instead of its s
   assert.equal(phone.data.sync.dirty.length, 0);
 });
 
+test('a phone opened before the laptop ever synced still drops its starter categories', async () => {
+  const server = fakeServer(3);
+  const phone = makeDevice(server, {
+    total_pp: 0, baseline_pp: 0, baseline_best_streak: 0, active_tasks: [], history: [],
+    categories: [{ id: 'dev', name: 'Development' }]
+  }, { fresh: true });
+  await phone.sync(); // nothing in the cloud yet
+  const laptop = makeDevice(server, { total_pp: 0, baseline_pp: 0, categories: [cat], active_tasks: [task('t1')], history: [] });
+  await laptop.sync();
+  await phone.sync();
+  assert.deepEqual(phone.data.categories.map(c => c.id), ['cat-work']);
+  assert.deepEqual(phone.tasks(), ['t1']);
+});
+
 test('edits made offline on both devices merge and converge', async () => {
   const server = fakeServer(2);
   const laptop = makeDevice(server, { total_pp: 0, baseline_pp: 0, categories: [cat], active_tasks: [task('a'), task('b'), task('c')], history: [] });

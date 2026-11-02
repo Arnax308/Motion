@@ -15,7 +15,7 @@ vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'js', 'sync-config
 const real = sandbox.window.MotionSyncConfig;
 if (!real || !real.apiKey) {
   console.error('js/sync-config.js has no Firebase config yet.');
-  process.exit(1);
+  process.exit(1); // nothing is in flight yet, so exiting immediately is safe
 }
 const config = { apiKey: real.apiKey, projectId: real.projectId, syncKey: `check-${crypto.randomBytes(16).toString('hex')}` };
 
@@ -64,11 +64,12 @@ function device(initial, fresh) {
   const view = d => JSON.stringify({ tasks: d.active_tasks.map(t => [t.id, t.title]).sort(), history: d.history.map(h => h.id).sort(), pp: d.total_pp });
   if (view(laptop.data) !== view(phone.data)) {
     console.error('Devices did not converge:\n', view(laptop.data), '\n', view(phone.data));
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
   console.log(`Both devices agree: ${view(laptop.data)}`);
   console.log('Sync works.');
 })().catch(err => {
   console.error('Sync check failed:', err.message || err);
-  process.exit(1);
+  process.exitCode = 1;
 });

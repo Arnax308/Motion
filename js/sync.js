@@ -64,7 +64,9 @@
       }
 
       store.commitRemote(data => {
-        data.sync.fresh = false;
+        // A new install stays "fresh" (ready to take the cloud's data wholesale) until there's
+        // something to merge with or the user has made changes of their own
+        if (pulled.records.length || dirty.length) data.sync.fresh = false;
         data.sync.last_synced = now();
         return 0;
       });

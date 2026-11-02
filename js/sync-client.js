@@ -18,7 +18,8 @@
 
   function status() {
     if (!enabled) return { state: 'off', last: null, error: null };
-    const s = engine.status();
+    // The UI asks for status before start() has created the engine
+    const s = engine ? engine.status() : { state: 'idle', last: null, error: null };
     return Object.assign({}, s, { last: s.last || (Store.get() && Store.get().sync.last_synced) || null });
   }
 
